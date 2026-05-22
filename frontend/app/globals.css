@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+:root {
+  --brand-canvas: #faf0e6;
+  --brand-surface: #ffffff;
+  --brand-surface-glass: rgb(255 255 255 / 0.58);
+
+  --brand-text: #1e2761;
+  --brand-muted: color-mix(in srgb, #1e2761 58%, #faf0e6 42%);
+
+  --brand-border: rgb(30 39 97 / 0.14);
+  --brand-border-muted: rgb(30 39 97 / 0.08);
+
+  --brand-accent: #e8603c;
+  --brand-accent-deep: color-mix(in srgb, #e8603c 78%, #1e2761 22%);
+  --brand-accent-secondary: #028090;
+  --brand-accent-secondary-deep: color-mix(in srgb, #028090 82%, #1e2761 18%);
+
+  --brand-accent-soft: rgb(232 96 60 / 0.2);
+  --brand-accent-softer: rgb(2 128 144 / 0.12);
+
+  --background: var(--brand-canvas);
+  --foreground: var(--brand-text);
+}
+
+html {
+  background-color: var(--brand-canvas);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-border: var(--brand-border);
+  --color-brand-border-muted: var(--brand-border-muted);
+  --color-brand-canvas: var(--brand-canvas);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-text: var(--brand-text);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-deep: var(--brand-accent-deep);
+  --color-brand-accent-secondary: var(--brand-accent-secondary);
+  --color-brand-accent-secondary-deep: var(--brand-accent-secondary-deep);
+  --color-brand-accent-soft: var(--brand-accent-soft);
+  --color-brand-accent-softer: var(--brand-accent-softer);
+  --shadow-soft: 0 4px 28px rgb(30 39 97 / 0.1);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--brand-canvas);
+    --foreground: var(--brand-text);
+  }
+}
+
+body {
+  background: var(--brand-canvas);
+  color: var(--brand-text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes glossary-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer utilities {
+  .card-on-navy,
+  .card-on-canvas {
+    border-radius: 1.5rem;
+    border: 1px solid rgb(30 39 97 / 0.12);
+    background: var(--brand-surface-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgb(30 39 97 / 0.07);
+  }
+
+  .animate-glossary-modal-in {
+    animation: glossary-modal-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-backdrop-fade-in {
+    animation: backdrop-fade-in 0.16s ease-out both;
+  }
+}

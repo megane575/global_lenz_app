@@ -1,0 +1,472 @@
+openapi: 3.0.3
+
+info:
+  title: Global Lenz API
+  description: |
+    各国ニュース要約アプリAPI
+
+    ■ 主機能
+    - 各国要約一覧
+    - 各国要約詳細
+    - 比較要約
+    - ネタ帳（favorites）
+    - 検索（AI要約生成）
+    - トピック一覧
+
+    ■ キャッシュ
+    - search: Redis（6時間）
+    - topics: Redis
+
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+
+tags:
+  - name: CountrySummaries
+  - name: ComparisonSummaries
+  - name: Favorites
+  - name: Search
+  - name: Topics
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # =========================
+    # 共通
+    # =========================
+
+    DifficultWord:
+      type: object
+      properties:
+        word:
+          type: string
+          example: 関税
+
+        meaning:
+          type: string
+          example: 輸入時に課される税金
+
+    Article:
+      type: object
+      properties:
+        title:
+          type: string
+
+        url:
+          type: string
+
+        description:
+          type: string
+
+    # =========================
+    # Country
+    # =========================
+
+    CountrySummaryListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+
+        topic_id:
+          type: integer
+
+        topic_name:
+          type: string
+
+        country_name:
+          type: string
+
+        recommend_score:
+          type: integer
+
+        summary_preview:
+          type: string
+
+        is_favorited:
+          type: boolean
+
+    CountrySummaryDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+
+        topic_name:
+          type: string
+
+        country_name:
+          type: string
+
+        recommend_score:
+          type: integer
+
+        country_summary_text:
+          type: string
+
+        difficult_words:
+          type: array
+          items:
+            $ref: "#/components/schemas/DifficultWord"
+
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Article"
+
+    # =========================
+    # Comparison
+    # =========================
+
+    ComparisonSummaryListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+
+        topic_id:
+          type: integer
+
+        topic_name:
+          type: string
+
+        variance_score:
+          type: integer
+
+    ComparisonSummaryDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+
+        topic_name:
+          type: string
+
+        variance_score:
+          type: integer
+
+        comparison_summary_text:
+          type: string
+
+        difficult_words:
+          type: array
+          items:
+            $ref: "#/components/schemas/DifficultWord"
+
+    # =========================
+    # Favorite
+    # =========================
+
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: integer
+
+        country_summary_id:
+          type: integer
+          nullable: true
+
+        comparison_summary_id:
+          type: integer
+          nullable: true
+
+    # =========================
+    # Search
+    # =========================
+
+    SearchRequest:
+      type: object
+      required:
+        - keyword
+      properties:
+        keyword:
+          type: string
+          example: イラン核合意
+
+    SearchResponse:
+      type: object
+      properties:
+        topic_name:
+          type: string
+
+        query_en:
+          type: string
+
+        query_nhk:
+          type: string
+
+        report:
+          type: object
+
+        media_results:
+          type: object
+
+paths:
+  # =========================
+  # Country Home
+  # =========================
+
+  /api/country-summaries/home:
+    get:
+      tags:
+        - CountrySummaries
+      summary: ホーム用国別要約一覧取得
+
+      responses:
+        "200":
+          description: 成功
+
+  # =========================
+  # Country List
+  # =========================
+
+  /api/country-summaries:
+    get:
+      tags:
+        - CountrySummaries
+      summary: 国別要約一覧取得
+
+      responses:
+        "200":
+          description: 成功
+
+  # =========================
+  # Country Detail
+  # =========================
+
+  /api/country-summaries/{id}:
+    get:
+      tags:
+        - CountrySummaries
+      summary: 国別要約1件取得
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: 成功
+
+        "404":
+          description: データなし
+
+  # =========================
+  # Country Detail Extended
+  # =========================
+
+  /api/country-summaries/{id}/detail:
+    get:
+      tags:
+        - CountrySummaries
+      summary: 国別要約詳細取得（optional login）
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: 成功
+
+  # =========================
+  # Comparison List
+  # =========================
+
+  /api/comparison-summaries:
+    get:
+      tags:
+        - ComparisonSummaries
+      summary: 比較要約一覧取得
+
+      responses:
+        "200":
+          description: 成功
+
+  # =========================
+  # Comparison Detail
+  # =========================
+
+  /api/comparison-summaries/{id}:
+    get:
+      tags:
+        - ComparisonSummaries
+      summary: 比較要約1件取得
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: 成功
+
+        "404":
+          description: Comparison not found
+
+  # =========================
+  # Comparison Detail Extended
+  # =========================
+
+  /api/comparison-summaries/{id}/detail:
+    get:
+      tags:
+        - ComparisonSummaries
+      summary: 比較要約詳細取得（optional login）
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: 成功
+
+  # =========================
+  # Favorites
+  # =========================
+
+  /api/favorites:
+    get:
+      tags:
+        - Favorites
+      summary: ネタ帳一覧取得
+      security:
+        - bearerAuth: []
+
+      responses:
+        "200":
+          description: 成功
+
+    post:
+      tags:
+        - Favorites
+      summary: ネタ帳登録
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Favorite"
+
+      responses:
+        "200":
+          description: 登録成功
+
+    delete:
+      tags:
+        - Favorites
+      summary: ネタ帳削除
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: country_summary_id
+          in: query
+          schema:
+            type: integer
+
+        - name: comparison_summary_id
+          in: query
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: 削除成功
+
+  # =========================
+  # Favorites with summaries
+  # =========================
+
+  /api/favorites/with-summaries:
+    get:
+      tags:
+        - Favorites
+      summary: JOIN済みネタ帳取得
+      security:
+        - bearerAuth: []
+
+      responses:
+        "200":
+          description: 成功
+
+  # =========================
+  # Search
+  # =========================
+
+  /api/search:
+    post:
+      tags:
+        - Search
+      summary: 検索実行（AI要約生成）
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchRequest"
+
+      responses:
+        "200":
+          description: 成功
+
+        "400":
+          description: 入力エラー
+
+        "500":
+          description: 検索エラー
+
+  # =========================
+  # Topics
+  # =========================
+
+  /api/topics/today:
+    get:
+      tags:
+        - Topics
+      summary: 今日のトピック取得
+
+      responses:
+        "200":
+          description: 成功
+
+  /api/topics/{topic_id}:
+    get:
+      tags:
+        - Topics
+      summary: トピック詳細取得
+
+      parameters:
+        - name: topic_id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: 成功

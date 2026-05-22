@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-dotenv
+redis
+feedparser
+openai
+supabase
+psycopg2-binary
+googlenewsdecoder
+httpx
+python-jose[cryptography]
+requests
+pytest
